@@ -1,0 +1,9 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cameras - MineWatch</title><link rel="stylesheet" href="/style.css"></head>
+<body><main class="shell"><nav class="nav"><span class="brand">◉ MineWatch</span><a href="/">Home</a><a href="/cameras.html">Cameras</a><a href="/publish.html">Share</a><a href="/guide.html">Guide</a></nav>
+<section class="panel"><h2>Cameras</h2><div class="row"><button id="random">Random camera</button><button id="reload">Reload</button><span id="summary" class="muted"></span></div><div id="grid" class="grid"></div></section></main>
+<script type="module">
+import {api,esc} from '/common.js';
+const grid=document.querySelector('#grid'), summary=document.querySelector('#summary');
+async function load(){ grid.innerHTML='Loading…'; try { const {cameras}=await api('/api/cameras'); summary.textContent=`${cameras.length} listed`; grid.innerHTML=''; if(!cameras.length) grid.textContent='No public cameras yet.'; for(const c of cameras){ const div=document.createElement('div'); div.className='card'; div.innerHTML=`<div class="thumb">CAM ${c.id}<br><span class="muted">${esc(c.title)}</span></div><div class="cardbar"><span>ID: ${c.id}</span><span class="state ${c.status==='online'?'live':'offline'}">${c.status.toUpperCase()}</span></div>`; div.onclick=()=>location.href=`/camera.html?id=${c.id}`; grid.appendChild(div); api(`/api/camera/${c.id}/live`).then(l=>{ const s=div.querySelector('.state'); s.textContent=(l.publisherOnline?'LIVE':'OFFLINE')+` · ${l.viewers}`; s.className='state '+(l.publisherOnline?'live':'offline'); }).catch(()=>{}); }} catch(e){grid.textContent=e.message}}
+random.onclick=async()=>{try{const r=await api('/api/random');location.href=`/camera.html?id=${r.id}`}catch(e){alert('No online camera')}}; reload.onclick=load; load();
+</script></body></html>
