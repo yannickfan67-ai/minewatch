@@ -1,0 +1,15 @@
+{
+  "name": "minewatch-p2p",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:local": "wrangler d1 migrations apply minewatch-db --local",
+    "db:remote": "wrangler d1 migrations apply minewatch-db --remote"
+  },
+  "devDependencies": {
+    "wrangler": "^4.35.0"
+  }
+}
