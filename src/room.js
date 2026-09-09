@@ -1,3 +1,6 @@
+const VALID_ROLES = new Set(['publisher', 'viewer']);
+const MAX_WS_MESSAGE_CHARS = 128 * 1024;
+
 export class CameraRoom {
   constructor(ctx, env) {
     this.ctx = ctx;
@@ -50,6 +53,9 @@ export class CameraRoom {
     }
 
     const role = request.headers.get('X-MW-Role') || 'viewer';
+    if (!VALID_ROLES.has(role)) {
+      return new Response('invalid websocket role', { status: 400 });
+    }
     const peerId = request.headers.get('X-MW-Peer') || crypto.randomUUID();
     const cameraId = request.headers.get('X-MW-Camera') || '';
     const maxViewers = Math.max(1, Math.min(8, Number(request.headers.get('X-MW-Max-Viewers')) || 4));
@@ -89,6 +95,10 @@ export class CameraRoom {
 
   async webSocketMessage(ws, message) {
     if (typeof message !== 'string') return;
+    if (message.length > MAX_WS_MESSAGE_CHARS) {
+      try { ws.close(1009, 'message too large'); } catch (_) {}
+      return;
+    }
     let data;
     try { data = JSON.parse(message); } catch (_) { return; }
     const me = ws.deserializeAttachment?.() || {};
