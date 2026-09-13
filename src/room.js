@@ -60,6 +60,9 @@ export class CameraRoom {
     const cameraId = request.headers.get('X-MW-Camera') || '';
     const maxViewers = Math.max(1, Math.min(8, Number(request.headers.get('X-MW-Max-Viewers')) || 4));
 
+    if (this.findPeer(peerId)) {
+      return new Response('peer id already connected', { status: 409 });
+    }
     if (role === 'publisher' && this.sockets('publisher').length > 0) {
       return new Response('publisher already connected', { status: 409 });
     }

@@ -26,6 +26,17 @@ test('unknown websocket roles are rejected before upgrade', async () => {
   assert.match(await response.text(),/invalid websocket role/);
 });
 
+test('duplicate websocket peer ids are rejected before upgrade', async () => {
+  const existing={deserializeAttachment(){return {role:'viewer',peerId:'same-peer'};}};
+  const ctx=context();
+  ctx.getWebSockets=()=>[existing];
+  const room=new CameraRoom(ctx,{});
+  const request=new Request('https://room/connect',{headers:{Upgrade:'websocket','X-MW-Role':'viewer','X-MW-Peer':'same-peer'}});
+  const response=await room.fetch(request);
+  assert.equal(response.status,409);
+  assert.match(await response.text(),/peer id already connected/);
+});
+
 test('oversized websocket messages close with code 1009', async () => {
   const room=new CameraRoom(context(),{});
   const closed=[];
